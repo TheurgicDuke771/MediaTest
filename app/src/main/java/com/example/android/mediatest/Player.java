@@ -1,23 +1,16 @@
 package com.example.android.mediatest;
 
-import android.app.LoaderManager;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
-import com.example.android.mediatest.data.MediosContract;
+import com.example.android.mediatest.data.MediosContract.MediosEntry;
 
-import java.io.File;
-import java.util.ArrayList;
+public class Player extends AppCompatActivity {
 
-public class Player extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-
-    private static final int EXISTING_SONG_LOADER = 0;
     private Uri mCurrentSongUri;
     MediaPlayer mp;
 
@@ -29,37 +22,22 @@ public class Player extends AppCompatActivity implements LoaderManager.LoaderCal
         Intent intent = getIntent();
         mCurrentSongUri = intent.getData();
 
-        if (mCurrentSongUri != null){
-            getLoaderManager().initLoader(EXISTING_SONG_LOADER, null, this);
-        }
-
-        mp = MediaPlayer.create(getApplicationContext(),mCurrentSongUri);
-        mp.start();
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         String[] projection = {
-                MediosContract.MediosEntry._ID,
-                MediosContract.MediosEntry.COLUMN_MUSIC_TITLE,
-                MediosContract.MediosEntry.COLUMN_MUSIC_PATH,
+                MediosEntry._ID,
+                MediosEntry.COLUMN_MUSIC_PATH
         };
 
-        return new CursorLoader(this,
-                MediosContract.MediosEntry.CONTENT_URI,
-                projection,
-                null,
-                null,
-                null);
-    }
+        Cursor cursor = getContentResolver().query(mCurrentSongUri, projection, null, null, null);
+        cursor.moveToNext();
+        int songPathColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_PATH);
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        String songPath = cursor.getString(songPathColumnIndex);
 
-    }
+        Uri uri = Uri.parse(songPath);
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+        mp = MediaPlayer.create(getApplicationContext(),uri);
+        mp.start();
 
+        cursor.close();
     }
 }
