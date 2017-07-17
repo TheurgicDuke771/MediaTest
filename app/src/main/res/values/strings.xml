@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Media Test</string>
     <string name="unknown_artist">Unkown Artist</string>
+    <string name="pause">||</string>
+    <string name="next"><![CDATA[>|]]></string>
+    <string name="previous"><![CDATA[|<]]></string>
 </resources>

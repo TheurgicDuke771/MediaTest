@@ -92,12 +92,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Intent intent = new Intent(MainActivity.this, Player.class);
 
-                // Form the content URI that represents the specific pet that was clicked on,
+                // Form the content URI that represents the specific song that was clicked on,
                 // by appending the "id" (passed as input to this method) onto the {@link MediosEntry#CONTENT_URI}.
-                Uri currentSongUri = ContentUris.withAppendedId(MediosEntry.CONTENT_URI, id);
+//                Uri currentSongUri = ContentUris.withAppendedId(MediosEntry.CONTENT_URI, id);
 
                 // Set the URI on the data field of the intent
-                intent.setData(currentSongUri);
+//                intent.setData(currentSongUri);
+
+                //Send the position to the Player activity
+                intent.putExtra("pos", position);
 
                 //Launch the Player activity
                 startActivity(intent);

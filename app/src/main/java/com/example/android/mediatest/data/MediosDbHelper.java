@@ -22,7 +22,7 @@ public class MediosDbHelper extends SQLiteOpenHelper {
         // Create a String that contains the SQL statement to create the pets table
         String SQL_CREATE_MUSIC_TABLE =  "CREATE TABLE " + MediosEntry.TABLE_NAME + " ("
                 + MediosEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + MediosEntry.COLUMN_MUSIC_TITLE + " TEXT NOT NULL, "
+                + MediosEntry.COLUMN_MUSIC_TITLE + " TEXT NOT NULL UNIQUE ON CONFLICT IGNORE, "
                 + MediosEntry.COLUMN_MUSIC_PATH + " TEXT NOT NULL, "
                 + MediosEntry.COLUMN_MUSIC_ALBUM + " TEXT, "
                 + MediosEntry.COLUMN_MUSIC_ARTIST + " TEXT, "
