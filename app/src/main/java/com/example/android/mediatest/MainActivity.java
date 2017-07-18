@@ -1,7 +1,6 @@
 package com.example.android.mediatest;
 
 import android.app.LoaderManager;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -12,12 +11,14 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.android.mediatest.data.MediosContract.MediosEntry;
 
@@ -28,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private static final int MEDIOS_LOADER =0;
     MediosCursorAdapter mediosCursorAdapter;
-    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
     String[] songName, artist;
     MediaMetadataRetriever mediaMetadataRetriever;
     String[] absolutePath;
@@ -52,34 +53,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
             // No explanation needed, we can request the permission.
 
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
 
             // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
             // app-defined int constant. The callback method gets the
             // result of the request.
             //}
-        }
-
-
-        final ArrayList<File> mySongs = findSongs(Environment.getExternalStorageDirectory());
-        songName = new String[mySongs.size()];
-        for (int i = 0; i < mySongs.size(); i++) {
-            songName[i] = mySongs.get(i).getName().replace(".mp3", "").replace(".m4a","").replace(".wav","");
-        }
-
-        absolutePath = new String[mySongs.size()];
-        for(int i =0; i < mySongs.size(); i++)
-        {
-            absolutePath[i] = mySongs.get(i).getAbsolutePath();
-        }
-
-
-        artist = new String[mySongs.size()];
-        for (int i = 0; i < mySongs.size(); i++) {
-            mediaMetadataRetriever = new MediaMetadataRetriever();
-            mediaMetadataRetriever.setDataSource(mySongs.get(i).getPath());
-            // Get the artist name
-            artist[i] = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         }
 
         ListView mediosListView = (ListView) findViewById(R.id.list);
@@ -108,10 +87,41 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         });
 
         getLoaderManager().initLoader(MEDIOS_LOADER, null, this);
-
-        insertMedia();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay!
+                    // Get files from external storage
+                    final ArrayList<File> mySongs = findSongs(Environment.getExternalStorageDirectory());
+                    songName = new String[mySongs.size()];
+                    for (int i = 0; i < mySongs.size(); i++) {
+                        songName[i] = mySongs.get(i).getName().replace(".mp3", "").replace(".m4a","").replace(".wav","");
+                    }
+                    absolutePath = new String[mySongs.size()];
+                    for(int i =0; i < mySongs.size(); i++) {
+                        absolutePath[i] = mySongs.get(i).getAbsolutePath();
+                    }
+                    artist = new String[mySongs.size()];
+                    for (int i = 0; i < mySongs.size(); i++) {
+                        mediaMetadataRetriever = new MediaMetadataRetriever();
+                        mediaMetadataRetriever.setDataSource(mySongs.get(i).getPath());
+                        artist[i] = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+                    }
+                    // Inset those values into database
+                    insertMedia();
+                }
+                else {
+                    // permission denied, boo!
+                    Toast.makeText(this, "ACCESS READ_EXTERNAL_STORAGE DENIED", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
 
     public ArrayList<File> findSongs(File root) {
         ArrayList<File> al = new ArrayList<>();
