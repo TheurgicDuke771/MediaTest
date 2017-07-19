@@ -119,4 +119,12 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                 break;
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        mp.stop();
+        mp.release();
+        finish();
+    }
 }
