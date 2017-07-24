@@ -4,4 +4,8 @@
     <string name="pause">||</string>
     <string name="next"><![CDATA[>|]]></string>
     <string name="previous"><![CDATA[|<]]></string>
+    <string name="songName">Song Name</string>
+    <string name="artistName">Artist Name</string>
+    <string name="albumName">Album Name</string>
+    <string name="unknown_album">Unknown Album</string>
 </resources>

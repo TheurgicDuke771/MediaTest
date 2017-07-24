@@ -54,11 +54,7 @@ public final class MediosContract {
         //Name of the columns
         public static final String _ID = BaseColumns._ID;
         public static final String COLUMN_MUSIC_TITLE = "title";
-        public static final String COLUMN_MUSIC_ALBUM = "album";
         public static final String COLUMN_MUSIC_PATH = "path";
         public static final String COLUMN_MUSIC_ARTIST = "artist";
-        public static final String COLUMN_MUSIC_GENRE = "genre";
-        public static final String COLUMN_MUSIC_YEAR = "year";
-        public static final String COLUMN_MUSIC_DURATION = "duration";
     }
 }

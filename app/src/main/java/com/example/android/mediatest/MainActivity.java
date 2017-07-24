@@ -27,12 +27,10 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final int MEDIOS_LOADER =0;
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0, MEDIOS_LOADER =0;
     MediosCursorAdapter mediosCursorAdapter;
-    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
-    String[] songName, artist;
+    String[] songName, artist, absolutePath;
     MediaMetadataRetriever mediaMetadataRetriever;
-    String[] absolutePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,23 +40,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-            // Should we show an explanation?
-            //if (ActivityCompat.shouldShowRequestPermissionRationale(this,android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
-
-            // Show an explanation to the user *asynchronously* -- don't block
-            // this thread waiting for the user's response! After the user
-            // sees the explanation, try again to request the permission.
-
-            //} else {
-
-            // No explanation needed, we can request the permission.
-
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
-
             // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
-            // app-defined int constant. The callback method gets the
-            // result of the request.
-            //}
+            // app-defined int constant. The callback method gets the result of the request.
         }
 
         ListView mediosListView = (ListView) findViewById(R.id.list);
@@ -70,13 +54,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Intent intent = new Intent(MainActivity.this, Player.class);
-
-                // Form the content URI that represents the specific song that was clicked on,
-                // by appending the "id" (passed as input to this method) onto the {@link MediosEntry#CONTENT_URI}.
-//                Uri currentSongUri = ContentUris.withAppendedId(MediosEntry.CONTENT_URI, id);
-
-                // Set the URI on the data field of the intent
-//                intent.setData(currentSongUri);
 
                 //Send the position to the Player activity
                 intent.putExtra("pos", position);

@@ -8,7 +8,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -17,28 +16,71 @@ import com.example.android.mediatest.data.MediosContract.MediosEntry;
 
 public class Player extends AppCompatActivity implements View.OnClickListener {
     private AudioManager mAudioManager;
-    int result;
-
-    private Uri mCurrentSongUri, uri;
+    private Uri uri;
     MediaPlayer mp;
     Button btPlay, btNxt, btPv;
     SeekBar sb;
     Cursor cursor;
-    int position, songPathColumnIndex, songTitleColumnIndex;
+    int position, songPathColumnIndex, songTitleColumnIndex, result;
     String songPath, songTitle;
 
     private AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
+        /**
+         * This method is called whenever the audio focus changes
+         * (i.e., we gain or lose audio focus because of another app or device).
+         */
         public void onAudioFocusChange(int focusChange) {
-            if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
-                    focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-                mp.pause();
-                mp.seekTo(mp.getCurrentPosition());
-            } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-                mp.start();
-            } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                mp.release();
-                mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener);
+            switch (focusChange) {
+                case AudioManager.AUDIOFOCUS_LOSS: {
+                    /**
+                     * This occurs when another app has requested audio focus.
+                     * When this happens, you should stop audio playback in your app.
+                     */
+                    if (mp.isPlaying()) {
+                        mp.stop();
+                        btPlay.setText(">");
+                    }
+                    break;
+                }
+
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: {
+                    /**
+                     * This state is entered when another app wants to play audio,
+                     * but it only anticipates needing focus for a short time.
+                     * You can use this state to pause your audio playback.
+                     */
+                    mp.pause();
+                    break;
+                }
+
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: {
+                    /**
+                     * When audio focus is requested, but throws a 'can duck' state, it means that you can continue your playback,
+                     * but should bring the volume down a bit.
+                     * This can occur when a notification sound is played by the device.
+                     */
+                    if (mp != null) {
+                        mp.setVolume(0.3f, 0.3f);
+                    }
+                    break;
+                }
+
+                case AudioManager.AUDIOFOCUS_GAIN: {
+                    /**
+                     * The final state we will discuss is AUDIOFOCUS_GAIN.
+                     * This is the state when a audio playback that can be ducked has completed, and your app can resume at its previous levels.
+                     */
+                    if (mp != null) {
+                        if (!mp.isPlaying()) {
+                            mp.seekTo(mp.getCurrentPosition());
+                            mp.start();
+                            btPlay.setText("||");
+                        }
+                        mp.setVolume(1.0f, 1.0f);
+                    }
+                    break;
+                }
             }
         }
     };
@@ -47,12 +89,12 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
         @Override
         public void run() {
             int totalDuration = mp.getDuration();
-            int currentPostion = 0;
-            while (currentPostion < totalDuration)
+            int currentPosition = 0;
+            while (currentPosition < totalDuration)
                 try {
                     sleep(500);
-                    currentPostion = mp.getCurrentPosition();
-                    sb.setProgress(currentPostion);
+                    currentPosition = mp.getCurrentPosition();
+                    sb.setProgress(currentPosition);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -100,7 +142,6 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
         sb = (SeekBar) findViewById(R.id.seekBar);
 
         Intent intent = getIntent();
-//        mCurrentSongUri = intent.getData();
         position = intent.getIntExtra("pos", 0);
 
         String[] projection = {
@@ -109,7 +150,6 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                 MediosEntry.COLUMN_MUSIC_PATH
         };
 
-        //cursor = getContentResolver().query(mCurrentSongUri, projection, null, null, null);
         cursor = getContentResolver().query(MediosEntry.CONTENT_URI,projection,null,null,null);
         cursor.moveToPosition(position);
         songPathColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_PATH);
@@ -141,12 +181,10 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
         sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
@@ -167,7 +205,11 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                     mp.pause();
                 } else {
                     btPlay.setText("||");
-                    mp.start();
+                    result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
+                            AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+                    if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                        mp.start();
+                    }
                 }
                 break;
             case R.id.btNxt:

@@ -24,11 +24,7 @@ public class MediosDbHelper extends SQLiteOpenHelper {
                 + MediosEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + MediosEntry.COLUMN_MUSIC_TITLE + " TEXT NOT NULL UNIQUE ON CONFLICT IGNORE, "
                 + MediosEntry.COLUMN_MUSIC_PATH + " TEXT NOT NULL, "
-                + MediosEntry.COLUMN_MUSIC_ALBUM + " TEXT, "
-                + MediosEntry.COLUMN_MUSIC_ARTIST + " TEXT, "
-                + MediosEntry.COLUMN_MUSIC_GENRE + " TEXT, "
-                + MediosEntry.COLUMN_MUSIC_YEAR + " INTEGER, "
-                + MediosEntry.COLUMN_MUSIC_DURATION + " INTEGER);";
+                + MediosEntry.COLUMN_MUSIC_ARTIST + " TEXT);";
 
         // Execute the SQL statement
         db.execSQL(SQL_CREATE_MUSIC_TABLE);
