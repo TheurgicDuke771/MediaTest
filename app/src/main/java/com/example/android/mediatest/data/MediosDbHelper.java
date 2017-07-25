@@ -19,7 +19,7 @@ public class MediosDbHelper extends SQLiteOpenHelper {
     }
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create a String that contains the SQL statement to create the pets table
+        // Create a String that contains the SQL statement to create the music table
         String SQL_CREATE_MUSIC_TABLE =  "CREATE TABLE " + MediosEntry.TABLE_NAME + " ("
                 + MediosEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + MediosEntry.COLUMN_MUSIC_TITLE + " TEXT NOT NULL UNIQUE ON CONFLICT IGNORE, "

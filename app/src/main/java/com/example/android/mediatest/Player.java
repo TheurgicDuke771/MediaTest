@@ -51,6 +51,7 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                      * You can use this state to pause your audio playback.
                      */
                     mp.pause();
+                    btPlay.setText(">");
                     break;
                 }
 
@@ -73,7 +74,6 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                      */
                     if (mp != null) {
                         if (!mp.isPlaying()) {
-                            mp.seekTo(mp.getCurrentPosition());
                             mp.start();
                             btPlay.setText("||");
                         }
