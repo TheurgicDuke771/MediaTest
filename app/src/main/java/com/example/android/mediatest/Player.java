@@ -70,7 +70,8 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                 case AudioManager.AUDIOFOCUS_GAIN: {
                     /**
                      * The final state we will discuss is AUDIOFOCUS_GAIN.
-                     * This is the state when a audio playback that can be ducked has completed, and your app can resume at its previous levels.
+                     * This is the state when a audio playback that can be ducked has completed,
+                     * and your app can resume at its previous levels.
                      */
                     if (mp != null) {
                         if (!mp.isPlaying()) {
@@ -151,13 +152,15 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
         };
 
         cursor = getContentResolver().query(MediosEntry.CONTENT_URI,projection,null,null,null);
-        cursor.moveToPosition(position);
-        songPathColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_PATH);
-        songPath = cursor.getString(songPathColumnIndex);
-        songTitleColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_TITLE);
-        songTitle = cursor.getString(songTitleColumnIndex);
-        uri = Uri.parse(songPath);
-        setTitle(songTitle);
+        if (cursor != null) {
+            cursor.moveToPosition(position);
+            songPathColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_PATH);
+            songPath = cursor.getString(songPathColumnIndex);
+            songTitleColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_TITLE);
+            songTitle = cursor.getString(songTitleColumnIndex);
+            uri = Uri.parse(songPath);
+            setTitle(songTitle);
+        }
 
         if (mp != null) {
             mp.stop();
