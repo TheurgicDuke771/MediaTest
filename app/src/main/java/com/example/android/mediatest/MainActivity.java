@@ -38,14 +38,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
 
         // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+            ActivityCompat.requestPermissions(this, new String[]{
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
             // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
             // app-defined int constant. The callback method gets the result of the request.
         }
 
-        ListView mediosListView = (ListView) findViewById(R.id.list);
+        ListView mediosListView = findViewById(R.id.list);
 
         mediosCursorAdapter = new MediosCursorAdapter(this, null);
         mediosListView.setAdapter(mediosCursorAdapter);
@@ -67,7 +70,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
                 // If request is cancelled, the result arrays are empty.
@@ -77,7 +81,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     final ArrayList<File> mySongs = findSongs(Environment.getExternalStorageDirectory());
                     songName = new String[mySongs.size()];
                     for (int i = 0; i < mySongs.size(); i++) {
-                        songName[i] = mySongs.get(i).getName().replace(".mp3", "").replace(".m4a","").replace(".wav","");
+                        songName[i] = mySongs.get(i).getName().replace(".mp3", "")
+                                .replace(".m4a","").replace(".wav","");
                     }
                     absolutePath = new String[mySongs.size()];
                     for(int i =0; i < mySongs.size(); i++) {
@@ -107,7 +112,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if (singleFile.isDirectory() && !singleFile.isHidden()) {
                 al.addAll(findSongs(singleFile));
             } else {
-                if (singleFile.getName().endsWith(".mp3")||singleFile.getName().endsWith(".m4a")||singleFile.getName().endsWith(".wav")) {
+                if (singleFile.getName().endsWith(".mp3")||singleFile.getName()
+                        .endsWith(".m4a")||singleFile.getName().endsWith(".wav")) {
                     al.add(singleFile);
                 }
             }

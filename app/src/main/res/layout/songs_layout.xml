@@ -1,43 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_margin="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp">
+    android:minHeight="@dimen/list_item_height">
 
     <ImageView
         android:id="@+id/songImage"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_weight="0.5"
+        android:layout_width="@dimen/list_item_height"
+        android:layout_height="@dimen/list_item_height"
         android:scaleType="centerCrop"
         tools:ignore="contentDescription" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:layout_weight="1"
+        android:id="@+id/text_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="8dp"
+        android:paddingEnd="0dp"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/songName"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="bottom"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="@string/songName"
             android:textColor="#212121"
+            android:textStyle="bold"
             android:textSize="18sp" />
 
         <TextView
             android:id="@+id/artistName"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="top"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="@string/artistName"

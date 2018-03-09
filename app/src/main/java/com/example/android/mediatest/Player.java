@@ -3,13 +3,17 @@ package com.example.android.mediatest;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 
 import com.example.android.mediatest.data.MediosContract.MediosEntry;
@@ -21,21 +25,24 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
     Button btPlay, btNxt, btPv;
     SeekBar sb;
     Cursor cursor;
+    Bitmap bm;
+    ImageView songImageView;
     int position, songPathColumnIndex, songTitleColumnIndex, result;
     String songPath, songTitle;
 
-    private AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+    private AudioManager.OnAudioFocusChangeListener
+            mOnAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
-        /**
-         * This method is called whenever the audio focus changes
-         * (i.e., we gain or lose audio focus because of another app or device).
+        /*
+          This method is called whenever the audio focus changes
+          (i.e., we gain or lose audio focus because of another app or device).
          */
         public void onAudioFocusChange(int focusChange) {
             switch (focusChange) {
                 case AudioManager.AUDIOFOCUS_LOSS: {
-                    /**
-                     * This occurs when another app has requested audio focus.
-                     * When this happens, you should stop audio playback in your app.
+                    /*
+                      This occurs when another app has requested audio focus.
+                      When this happens, you should stop audio playback in your app.
                      */
                     if (mp.isPlaying()) {
                         mp.stop();
@@ -45,10 +52,10 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                 }
 
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: {
-                    /**
-                     * This state is entered when another app wants to play audio,
-                     * but it only anticipates needing focus for a short time.
-                     * You can use this state to pause your audio playback.
+                    /*
+                      This state is entered when another app wants to play audio,
+                      but it only anticipates needing focus for a short time.
+                      You can use this state to pause your audio playback.
                      */
                     mp.pause();
                     btPlay.setText(">");
@@ -56,10 +63,11 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                 }
 
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: {
-                    /**
-                     * When audio focus is requested, but throws a 'can duck' state, it means that you can continue your playback,
-                     * but should bring the volume down a bit.
-                     * This can occur when a notification sound is played by the device.
+                    /*
+                      When audio focus is requested, but throws a 'can duck' state,
+                      it means that you can continue your playback,
+                      but should bring the volume down a bit.
+                      This can occur when a notification sound is played by the device.
                      */
                     if (mp != null) {
                         mp.setVolume(0.3f, 0.3f);
@@ -68,10 +76,10 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                 }
 
                 case AudioManager.AUDIOFOCUS_GAIN: {
-                    /**
-                     * The final state we will discuss is AUDIOFOCUS_GAIN.
-                     * This is the state when a audio playback that can be ducked has completed,
-                     * and your app can resume at its previous levels.
+                    /*
+                      The final state we will discuss is AUDIOFOCUS_GAIN.
+                      This is the state when a audio playback that can be ducked has completed,
+                      and your app can resume at its previous levels.
                      */
                     if (mp != null) {
                         if (!mp.isPlaying()) {
@@ -108,22 +116,8 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
             mp.stop();
             mp.release();
             position = (position + 1) % cursor.getCount();
-            cursor.moveToPosition(position);
-            songPathColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_PATH);
-            songPath = cursor.getString(songPathColumnIndex);
-            uri = Uri.parse(songPath);
-            result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
-                    AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                mp = MediaPlayer.create(getApplicationContext(), uri);
-                mp.start();
-                sb.setMax(mp.getDuration());
-                sb.setProgress(0);
-                mp.setOnCompletionListener(mCompletionListener);
-            }
-            songTitleColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_TITLE);
-            songTitle = cursor.getString(songTitleColumnIndex);
-            setTitle(songTitle);
+            onSongChange();
+            mp.setOnCompletionListener(mCompletionListener);
         }
     };
 
@@ -132,15 +126,16 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        btPlay = (Button)findViewById(R.id.btPlay);
-        btNxt = (Button) findViewById(R.id.btNxt);
-        btPv = (Button) findViewById(R.id.btPv);
+        btPlay = findViewById(R.id.btPlay);
+        btNxt = findViewById(R.id.btNxt);
+        btPv = findViewById(R.id.btPv);
+        songImageView = findViewById(R.id.songImage);
 
         btPlay.setOnClickListener(this);
         btNxt.setOnClickListener(this);
         btPv.setOnClickListener(this);
 
-        sb = (SeekBar) findViewById(R.id.seekBar);
+        sb = findViewById(R.id.seekBar);
 
         Intent intent = getIntent();
         position = intent.getIntExtra("pos", 0);
@@ -160,6 +155,16 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
             songTitle = cursor.getString(songTitleColumnIndex);
             uri = Uri.parse(songPath);
             setTitle(songTitle);
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(songPath);
+            byte[] artBytes = mmr.getEmbeddedPicture();
+            if (artBytes != null) {
+                bm = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.length);
+                songImageView.setImageBitmap(bm);
+            }
+            else {
+                songImageView.setImageResource(R.drawable.defaultalbumart);
+            }
         }
 
         if (mp != null) {
@@ -169,8 +174,10 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
 
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
-        result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
-                AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        if (mAudioManager != null) {
+            result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
+                    AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        }
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             mp = MediaPlayer.create(getApplicationContext(), uri);
             mp.start();
@@ -198,6 +205,39 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
 //        cursor.close();
     }
 
+    /**
+     *  This method sets the cursor, parse the uri,
+     *  check the audio focus status then stats the media player
+     *  reset the seek-bar position and set the song title.
+     */
+    public void onSongChange(){
+        cursor.moveToPosition(position);
+        songPathColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_PATH);
+        songPath = cursor.getString(songPathColumnIndex);
+        uri = Uri.parse(songPath);
+        result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
+                AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            mp = MediaPlayer.create(getApplicationContext(), uri);
+            mp.start();
+            sb.setMax(mp.getDuration());
+            sb.setProgress(0);
+        }
+        songTitleColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_TITLE);
+        songTitle = cursor.getString(songTitleColumnIndex);
+        setTitle(songTitle);
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(songPath);
+        byte[] artBytes = mmr.getEmbeddedPicture();
+        if (artBytes != null) {
+            bm = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.length);
+            songImageView.setImageBitmap(bm);
+        }
+        else {
+            songImageView.setImageResource(R.drawable.defaultalbumart);
+        }
+    }
+
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -219,49 +259,17 @@ public class Player extends AppCompatActivity implements View.OnClickListener {
                 mp.stop();
                 mp.reset();
                 mp.release();
-
                 position = (position + 1) % cursor.getCount();
-                cursor.moveToPosition(position);
-                songPathColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_PATH);
-                songPath = cursor.getString(songPathColumnIndex);
-                uri = Uri.parse(songPath);
-                result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
-                        AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-                if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                    mp = MediaPlayer.create(getApplicationContext(), uri);
-                    mp.start();
-                    sb.setMax(mp.getDuration());
-                    sb.setProgress(0);
-                }
+                onSongChange();
                 btPlay.setText("||");
-
-                songTitleColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_TITLE);
-                songTitle = cursor.getString(songTitleColumnIndex);
-                setTitle(songTitle);
                 break;
             case R.id.btPv:
                 mp.stop();
                 mp.reset();
                 mp.release();
-
                 position = (position - 1 < 0) ? cursor.getCount() - 1 : position - 1;
-                cursor.moveToPosition(position);
-                songPathColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_PATH);
-                songPath = cursor.getString(songPathColumnIndex);
-                uri = Uri.parse(songPath);
-                result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
-                        AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-                if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                    mp = MediaPlayer.create(getApplicationContext(), uri);
-                    mp.start();
-                    sb.setMax(mp.getDuration());
-                    sb.setProgress(0);
-                }
+                onSongChange();
                 btPlay.setText("||");
-
-                songTitleColumnIndex = cursor.getColumnIndex(MediosEntry.COLUMN_MUSIC_TITLE);
-                songTitle = cursor.getString(songTitleColumnIndex);
-                setTitle(songTitle);
                 break;
         }
         mp.setOnCompletionListener(mCompletionListener);
